@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let gameAreaWidth, gameAreaHeight, turtleWidth, turtleHeight;
     let turtleCurrentX, turtleCurrentY;
-    let turtleSpeed = 3.5;
     let turtleScaleX = 1;
+    let turtleSpeed = 3.5;
 
     const movement = {
         up: false, down: false, left: false, right: false
@@ -37,14 +37,23 @@ document.addEventListener('DOMContentLoaded', () => {
         isGameOver = false;
         gameAreaWidth = gameArea.offsetWidth;
         gameAreaHeight = gameArea.offsetHeight;
-        turtleWidth = turtle.offsetWidth;
-        turtleHeight = turtle.offsetHeight;
+        if (!turtleWidth) turtleWidth = turtle.offsetWidth;
+        if (!turtleHeight) turtleHeight = turtle.offsetHeight;
 
         turtleCurrentX = gameAreaWidth / 2 - turtleWidth / 2;
         turtleCurrentY = gameAreaHeight / 2 - turtleHeight / 2;
-        turtle.style.transform = `translate(${turtleCurrentX}px, ${turtleCurrentY}px) scaleX(${turtleScaleX})`;
-        turtle.style.display = 'block'; // 거북이 보이도록 설정
-        if (ribbonOnShell) ribbonOnShell.classList.add('hidden');
+        turtleScaleX = 1;
+
+        turtle.style.position = 'absolute';
+        turtle.style.left = '';
+        turtle.style.top = '';
+        turtle.style.transform = `translate(${turtleCurrentX}px, ${turtleCurrentY}px) scaleX(${turtleScaleX}) scale(1)`;
+        turtle.style.zIndex = ''; // 성공/오버 화면에서 zIndex가 변경될 수 있으므로 초기화
+        turtle.style.display = 'block';
+
+        if (ribbonOnShell) {
+            ribbonOnShell.classList.add('hidden');
+        }
 
         obstacles.forEach(obstacleEl => {
             if (gameArea.contains(obstacleEl)) gameArea.removeChild(obstacleEl);
@@ -69,8 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
         animationFrameId = requestAnimationFrame(gameLoop);
-
-        console.log(`새 게임 시작! (목표 점수: ${TARGET_SCORE})`);
     }
 
     function isOverlapping(rect1, rect2) {
@@ -123,8 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 obstacleEl.style.top = obstacleY + 'px';
                 gameArea.appendChild(obstacleEl);
                 obstacles.push(obstacleEl);
-            } else {
-                // console.warn("장애물 위치 선정 실패");
             }
         }
     }
@@ -151,11 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 left: ribbonX, top: ribbonY,
                 right: ribbonX + ribbonContainerWidth, bottom: ribbonY + ribbonContainerHeight
             };
-            const turtleRect = {
+            const turtleRectForRibbon = {
                 left: turtleCurrentX - ribbonContainerWidth, top: turtleCurrentY - ribbonContainerHeight,
                 right: turtleCurrentX + turtleWidth + ribbonContainerWidth, bottom: turtleCurrentY + turtleHeight + ribbonContainerHeight
             };
-            if (isOverlapping(newRibbonRect, turtleRect)) continue;
+            if (isOverlapping(newRibbonRect, turtleRectForRibbon)) continue;
             let overlapsWithObstacle = false;
             for (const obstacleEl of obstacles) {
                 const obstacleRect = {
@@ -180,15 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentRibbon.classList.add('visible');
                 }
             });
-        } else {
-            // console.warn("리본 위치 선정 실패");
         }
     }
 
     function collectRibbon() {
-        if (!currentRibbon) return; // isGameOver는 updateScore에서 체크됨
-        // updateScore(); // 여기서 호출하지 않고 gameLoop에서 충돌 시 직접 호출
-
+        if (!currentRibbon) return;
         const collectedRibbon = currentRibbon;
         currentRibbon = null;
         collectedRibbon.classList.remove('visible');
@@ -207,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isGameOver) return;
         score++;
         scoreDisplay.textContent = score;
-        if (score >= TARGET_SCORE && !isGameOver) { // !isGameOver 추가하여 중복 방지
+        if (score >= TARGET_SCORE && !isGameOver) {
             gameSuccess();
         }
     }
@@ -216,13 +217,41 @@ document.addEventListener('DOMContentLoaded', () => {
         isGameOver = true;
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
-        // turtle.style.display = 'none'; // 거북이 숨기지 않음
-        if (ribbonOnShell) ribbonOnShell.classList.remove('hidden');
+
+        turtle.style.display = 'block';
+        if (ribbonOnShell) {
+            ribbonOnShell.classList.remove('hidden');
+        }
+
+        const gameContainerRect = gameContainer.getBoundingClientRect();
+        // gameSuccessScreen의 CSS에서 width, height가 고정되어 있다고 가정.
+        // 만약 가변적이라면, getBoundingClientRect()를 사용해야 하지만,
+        // 이 함수는 요소가 화면에 렌더링된 후에 정확한 값을 반환합니다.
+        // 여기서는 CSS에 정의된 값을 사용합니다.
+        const successScreenWidth = 350; // CSS #game-success-screen width
+        const successScreenHeight = gameSuccessScreen.offsetHeight; // 실제 높이 가져오기 (padding 포함)
+                                                                  // 또는 CSS에서 height가 고정이라면 해당 값 사용
+
+        // 성공 화면의 gameContainer 내 상대적 top 위치 계산
+        // (컨테이너 높이 / 2) - (성공화면 높이 / 2)
+        const successScreenTopRelativeToContainer = (gameContainer.offsetHeight / 2) - (successScreenHeight / 2);
+
+        turtle.style.position = 'absolute'; // gameContainer 기준
+        turtle.style.left = '50%';
+        // 성공화면 상단보다 (거북이 높이 * 축소비율) 만큼 위 + 약간의 여유
+        // CSS에서 #game-success-screen padding-top: 80px;을 사용하고 있으므로, 이 공간 내에 위치.
+        // 패딩 영역의 중앙에 오도록 계산
+        const successScreenPaddingTop = 80; // CSS에서 설정한 값
+        turtle.style.top = (successScreenTopRelativeToContainer + (successScreenPaddingTop / 2) - (turtleHeight * 0.7 / 2)) + 'px';
+        turtle.style.transform = `translateX(-50%) scaleX(${turtleScaleX}) scale(0.7)`;
+        turtle.style.zIndex = '101';
+
+
         if (currentRibbon && gameArea.contains(currentRibbon)) {
             gameArea.removeChild(currentRibbon);
             currentRibbon = null;
         }
-        obstacles.forEach(obstacleEl => { // 성공 시 장애물도 제거
+        obstacles.forEach(obstacleEl => {
             if (gameArea.contains(obstacleEl)) gameArea.removeChild(obstacleEl);
         });
         obstacles = [];
@@ -235,12 +264,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function endGame() {
-        if(isGameOver) return; // 이미 성공 또는 다른 이유로 게임오버 상태면 중복 실행 방지
+        if(isGameOver) return;
         isGameOver = true;
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
         turtle.style.display = 'none';
-        if (ribbonOnShell) ribbonOnShell.classList.add('hidden');
+        if (ribbonOnShell) {
+            ribbonOnShell.classList.add('hidden');
+        }
         if (currentRibbon && gameArea.contains(currentRibbon)) {
             gameArea.removeChild(currentRibbon);
             currentRibbon = null;
@@ -265,7 +296,9 @@ document.addEventListener('DOMContentLoaded', () => {
             nextY < 0 || nextY + turtleHeight > gameAreaHeight) {
             turtleCurrentX = Math.max(0, Math.min(turtleCurrentX + dx, gameAreaWidth - turtleWidth));
             turtleCurrentY = Math.max(0, Math.min(turtleCurrentY + dy, gameAreaHeight - turtleHeight));
-            turtle.style.transform = `translate(${turtleCurrentX}px, ${turtleCurrentY}px) scaleX(${turtleScaleX})`;
+            if (gameSuccessScreen.classList.contains('hidden')) { // 성공 화면이 아닐 때만
+                turtle.style.transform = `translate(${turtleCurrentX}px, ${turtleCurrentY}px) scaleX(${turtleScaleX}) scale(1)`;
+            }
             if (!isGameOver) endGame(); return;
         }
         const prospectiveTurtleRect = {
@@ -278,19 +311,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 right: parseFloat(obstacleEl.style.left) + obstacleEl.offsetWidth, bottom: parseFloat(obstacleEl.style.top) + obstacleEl.offsetHeight
             };
             if (isOverlapping(prospectiveTurtleRect, obstacleRect)) {
-                 turtle.style.transform = `translate(${turtleCurrentX}px, ${turtleCurrentY}px) scaleX(${turtleScaleX})`;
+                if (gameSuccessScreen.classList.contains('hidden')) { // 성공 화면이 아닐 때만
+                    turtle.style.transform = `translate(${turtleCurrentX}px, ${turtleCurrentY}px) scaleX(${turtleScaleX}) scale(1)`;
+                }
                 if (!isGameOver) endGame(); return;
             }
         }
         turtleCurrentX = nextX; turtleCurrentY = nextY;
-        if (dx > 0) turtleScaleX = 1; else if (dx < 0) turtleScaleX = -1;
-        turtle.style.transform = `translate(${turtleCurrentX}px, ${turtleCurrentY}px) scaleX(${turtleScaleX})`;
+
+        if (dx > 0) {
+            turtleScaleX = 1;
+        } else if (dx < 0) {
+            turtleScaleX = -1;
+        }
+
+        if (gameSuccessScreen.classList.contains('hidden')) { // 성공 화면이 아닐 때만
+            turtle.style.transform = `translate(${turtleCurrentX}px, ${turtleCurrentY}px) scaleX(${turtleScaleX}) scale(1)`;
+        }
+
         if (currentRibbon) {
             const turtleRect = turtle.getBoundingClientRect();
             const ribbonRect = currentRibbon.getBoundingClientRect();
             if (isOverlapping(turtleRect, ribbonRect)) {
-                updateScore(); // 점수 업데이트
-                if (!isGameOver) { // 성공/오버 상태가 아니면 리본 수집
+                updateScore();
+                if (!isGameOver) {
                     collectRibbon();
                 }
             }
@@ -336,6 +380,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isGameOver) {
             turtleCurrentX = Math.max(0, Math.min(turtleCurrentX, gameAreaWidth - turtleWidth));
             turtleCurrentY = Math.max(0, Math.min(turtleCurrentY, gameAreaHeight - turtleHeight));
+        } else if (!gameSuccessScreen.classList.contains('hidden')) { // 성공 화면이 표시된 상태에서 리사이즈
+            const gameContainerRect = gameContainer.getBoundingClientRect();
+            const successScreenHeight = gameSuccessScreen.offsetHeight; // 실제 높이 사용
+            const successScreenPaddingTop = 80; // CSS 값
+            const successScreenTopRelativeToContainer = (gameContainer.offsetHeight / 2) - (successScreenHeight / 2);
+            turtle.style.top = (successScreenTopRelativeToContainer + (successScreenPaddingTop / 2) - (turtleHeight * 0.7 / 2)) + 'px';
         }
     });
 

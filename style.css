@@ -32,13 +32,13 @@ body {
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
 }
 
-/* --- 거북이 스타일 --- */
 .turtle-container {
     position: absolute;
     width: 100px;
     height: 75px;
     transform-origin: 50% 60%;
-    will-change: transform;
+    will-change: transform, top, left;
+    transition: transform 0.05s linear, top 0.3s ease-out, left 0.3s ease-out;
 }
 
 .shell {
@@ -156,7 +156,6 @@ body {
     border: 1px solid #8bc34a;
 }
 
-/* --- 리본 아이템 스타일 (꼬리 없는 모양) --- */
 .ribbon {
     position: absolute;
     width: 48px;
@@ -217,7 +216,6 @@ body {
     transform: translateY(-50%) rotate(55deg) translateX(4px);
 }
 
-/* --- 장애물 스타일 --- */
 .obstacle {
     position: absolute;
     background-color: #616161;
@@ -226,15 +224,17 @@ body {
     border-radius: 3px;
 }
 
-/* --- 등껍질 위 리본 스타일 --- */
+/* --- 거북이에게 달린 리본 스타일 (머리 앞쪽) --- */
 .ribbon-on-shell {
-    position: absolute;
-    top: -5px;
-    left: 50%;
-    transform: translateX(-50%) scale(0.6);
+    position: absolute; /* .shell 내부 기준 */
     width: 30px;
     height: 25px;
-    z-index: 3;
+    /* .shell의 top: 8px, left: 10px 임을 고려 */
+    /* 거북이 머리 중앙(shell 기준 left: 40px) 앞쪽, 살짝 위 */
+    top: -15px;  /* shell 상단보다 15px 위 (머리 위) */
+    left: 40px; /* shell 왼쪽에서 40px (머리 중앙 부근) */
+    transform: translateX(-50%) scale(0.7) rotate(-15deg); /* 중앙정렬, 크기, 각도 */
+    z-index: 4; /* 머리(z-index:3) 보다 위에 */
 }
 .ribbon-on-shell.hidden {
     display: none !important;
@@ -273,8 +273,6 @@ body {
     transform: translate(10%, -50%) rotate(45deg);
 }
 
-
-/* --- 컨트롤, 게임오버, 게임성공 화면 --- */
 .controls {
     margin-top: 15px;
     font-size: 16px;
@@ -303,8 +301,8 @@ body {
 #game-success-screen {
     background-color: rgba(67, 160, 71, 0.92);
     width: 350px;
+    padding-top: 80px; /* 거북이 위치를 위한 공간 */
 }
-
 
 #game-over-screen h2,
 #game-success-screen h2 {
@@ -320,7 +318,6 @@ body {
     color: #ffcc80;
 }
 
-
 #game-over-screen p,
 #game-success-screen p {
     font-size: 1.3em;
@@ -330,7 +327,6 @@ body {
 #game-success-screen p:last-of-type {
     margin-bottom: 25px;
 }
-
 
 #restart-button,
 #restart-button-success {
