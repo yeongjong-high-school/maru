@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>거북이 리본 줍기 게임 (리본 앞으로)</title>
+    <title>거북이 리본 줍기 게임 (리본 표시 디버깅)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +17,6 @@
                     <div class="shell-pattern pattern3"></div>
                     <div class="shell-pattern pattern4"></div>
                     <div class="shell-pattern pattern5"></div>
-                    <!-- 리본 위치는 CSS로 거북이 앞으로 조정됨 -->
                     <div class="ribbon-on-shell hidden">
                         <div class="knot"></div>
                         <div class="loop loop1"></div>
@@ -35,18 +34,15 @@
                 <div class="leg back-right"></div>
                 <div class="tail"></div>
             </div>
-            <!-- 리본 및 장애물은 JavaScript로 동적으로 추가됩니다 -->
         </div>
         <p class="controls">방향키 또는 WASD로 거북이를 움직여 리본을 모으세요!</p>
 
-        <!-- 게임 오버 화면 -->
         <div id="game-over-screen" class="hidden">
             <h2>게임 오버!</h2>
             <p>최종 점수: <span id="final-score">0</span></p>
             <button id="restart-button">다시 시작</button>
         </div>
 
-        <!-- 게임 성공 화면 -->
         <div id="game-success-screen" class="hidden">
             <h2>성공!</h2>
             <p>축하합니다! 목표 점수 <span id="target-score-success">25</span>점을 달성했어요!</p>
@@ -54,7 +50,6 @@
             <button id="restart-button-success">다시 시작</button>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>

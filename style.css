@@ -224,17 +224,15 @@ body {
     border-radius: 3px;
 }
 
-/* --- 거북이에게 달린 리본 스타일 (머리 앞쪽) --- */
 .ribbon-on-shell {
-    position: absolute; /* .shell 내부 기준 */
+    position: absolute;
     width: 30px;
     height: 25px;
-    /* .shell의 top: 8px, left: 10px 임을 고려 */
-    /* 거북이 머리 중앙(shell 기준 left: 40px) 앞쪽, 살짝 위 */
-    top: -15px;  /* shell 상단보다 15px 위 (머리 위) */
-    left: 40px; /* shell 왼쪽에서 40px (머리 중앙 부근) */
-    transform: translateX(-50%) scale(0.7) rotate(-15deg); /* 중앙정렬, 크기, 각도 */
-    z-index: 4; /* 머리(z-index:3) 보다 위에 */
+    top: -20px;
+    left: 40px;
+    transform-origin: center bottom;
+    transform: translateX(-50%) rotate(-10deg) scale(0.9);
+    z-index: 4;
 }
 .ribbon-on-shell.hidden {
     display: none !important;
@@ -301,7 +299,7 @@ body {
 #game-success-screen {
     background-color: rgba(67, 160, 71, 0.92);
     width: 350px;
-    padding-top: 80px; /* 거북이 위치를 위한 공간 */
+    padding-top: 80px;
 }
 
 #game-over-screen h2,
