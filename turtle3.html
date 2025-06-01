@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>부드럽게 움직이는 바다 거북이</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+    }
+    body {
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #4FC3F7, #01579B);
+      height: 100vh;
+      user-select: none;
+    }
+    .background {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .turtle {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      left: 200px;
+      top: 400px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+    }
+    .body {
+      width: 120px;
+      height: 120px;
+      background-color: #7ed87e;
+      left: 0;
+      top: 0;
+      transition: background-color 0.3s;
+    }
+    .head {
+      width: 45px;
+      height: 45px;
+      background-color: #388E3C;
+      top: -37px;
+      left: 37px;
+      transition: background-color 0.3s;
+    }
+    .eye-white {
+      width: 9px;
+      height: 9px;
+      background-color: white;
+      top: 7px;
+    }
+    .eye-black {
+      width: 4px;
+      height: 4px;
+      background-color: black;
+      top: 2.5px;
+      left: 2.5px;
+    }
+    .eye-left { left: 7px; }
+    .eye-right { right: 7px; }
+    .leg {
+      width: 30px;
+      height: 30px;
+      background-color: #388E3C;
+      transform-origin: center;
+      transition: background-color 0.3s;
+    }
+    .leg1 {
+      top: 15px;
+      left: -15px;
+      animation: flap1 1.6s ease-in-out infinite;
+    }
+    .leg2 {
+      top: 15px;
+      left: 110px;
+      animation: flap2 1.6s ease-in-out infinite;
+    }
+    .leg3 {
+      top: 75px;
+      left: -15px;
+      animation: flap1 1.6s ease-in-out infinite;
+    }
+    .leg4 {
+      top: 75px;
+      left: 110px;
+      animation: flap2 1.6s ease-in-out infinite;
+    }
+    @keyframes flap1 {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-30deg); }
+    }
+    @keyframes flap2 {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(30deg); }
+    }
+    .tail {
+      width: 15px;
+      height: 15px;
+      background-color: #388E3C;
+      top: 100px;
+      left: 53px;
+      transition: background-color 0.3s;
+    }
+    .bubble {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      animation: rise 6s linear infinite;
+    }
+    @keyframes rise {
+      0% { bottom: -20px; opacity: 0; transform: translateX(0); }
+      50% { opacity: 1; }
+      100% { bottom: 100vh; transform: translateX(30px); opacity: 0; }
+    }
+    .trash {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #8e8e8e;
+      border-radius: 3px;
+      opacity: 0.7;
+    }
+    .scoreboard {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-size: 30px;
+      color: #ff4d4d;
+      z-index: 1000;
+    }
+    .timer {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      color: white;
+      font-weight: bold;
+      z-index: 1000;
+      text-shadow: 0 0 5px #000;
+    }
+    .game-over {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 40px;
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 30px;
+      border-radius: 20px;
+      display: none;
+      z-index: 1001;
+      text-align: center;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <div class="bubble" style="left: 50px; animation-delay: 0s;"></div>
+    <div class="bubble" style="left: 150px; animation-delay: 1s;"></div>
+    <div class="bubble" style="left: 300px; animation-delay: 2.5s;"></div>
+    <div class="bubble" style="left: 400px; animation-delay: 4s;"></div>
+
+    <div class="turtle" id="turtle">
+      <div class="circle body"></div>
+      <div class="circle head">
+        <div class="circle eye-white eye-left">
+          <div class="circle eye-black"></div>
+        </div>
+        <div class="circle eye-white eye-right">
+          <div class="circle eye-black"></div>
+        </div>
+      </div>
+      <div class="circle leg leg1"></div>
+      <div class="circle leg leg2"></div>
+      <div class="circle leg leg3"></div>
+      <div class="circle leg leg4"></div>
+      <div class="circle tail"></div>
+    </div>
+  </div>
+
+  <div class="scoreboard" id="scoreboard">❤️❤️❤️</div>
+  <div class="timer" id="timer">거북스딱스 수명: 0초</div>
+  <div class="game-over" id="gameOver">게임 종료\n거북스딱스 수명: 0초\n화면을 클릭하면 다시 시작합니다</div>
+
+<script>
+  const turtle = document.getElementById("turtle");
+  const body = turtle.querySelector(".body");
+  const head = turtle.querySelector(".head");
+  const legs = turtle.querySelectorAll(".leg");
+  const tail = turtle.querySelector(".tail");
+
+  let x = 200;
+  let y = 400;
+  let baseSpeed = 200;
+  let speed = baseSpeed;
+  let trashFallSpeed = 2;
+  let hearts = 3;
+  const scoreboard = document.getElementById("scoreboard");
+  const gameOver = document.getElementById("gameOver");
+  const timerDisplay = document.getElementById("timer");
+
+  let gameStartTime = Date.now();
+  let gameEnded = false;
+
+  const keys = {
+    ArrowUp: false,
+    ArrowDown: false,
+    ArrowLeft: false,
+    ArrowRight: false,
+  };
+
+  function setTurtleColor(color) {
+    body.style.backgroundColor = color;
+    head.style.backgroundColor = color === "red" ? "#b22222" : "#388E3C";
+    tail.style.backgroundColor = color === "red" ? "#b22222" : "#388E3C";
+    legs.forEach(leg => {
+      leg.style.backgroundColor = color === "red" ? "#b22222" : "#388E3C";
+    });
+  }
+
+  function resetTurtleColor() {
+    setTurtleColor("#7ed87e");
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (gameEnded) return;
+    if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+  });
+  window.addEventListener("keyup", (e) => {
+    if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
+  });
+
+  function checkCollision(trash) {
+    const turtleRect = turtle.getBoundingClientRect();
+    const trashRect = trash.getBoundingClientRect();
+    return !(
+      turtleRect.right < trashRect.left ||
+      turtleRect.left > trashRect.right ||
+      turtleRect.bottom < trashRect.top ||
+      turtleRect.top > trashRect.bottom
+    );
+  }
+
+  function createTrash() {
+    if (gameEnded) return;
+    const trash = document.createElement("div");
+    trash.classList.add("trash");
+    trash.style.left = Math.random() * (window.innerWidth - 20) + "px";
+    trash.style.top = "-30px";
+    document.querySelector(".background").appendChild(trash);
+
+    let trashY = -30;
+    function fall() {
+      if (gameEnded) {
+        trash.remove();
+        return;
+      }
+
+      trashY += trashFallSpeed;
+      trash.style.top = trashY + "px";
+
+      if (checkCollision(trash)) {
+        setTurtleColor("red");
+        setTimeout(resetTurtleColor, 2000);
+        trash.remove();
+        hearts--;
+        updateHearts();
+        if (hearts <= 0) endGame();
+        return;
+      }
+
+      if (trashY < window.innerHeight) {
+        requestAnimationFrame(fall);
+      } else {
+        trash.remove();
+      }
+    }
+    fall();
+  }
+
+  function updateHearts() {
+    scoreboard.textContent = "❤️".repeat(hearts);
+  }
+
+  function endGame() {
+    gameEnded = true;
+    clearInterval(trashInterval);
+    clearInterval(speedIncreaseInterval);
+    scoreboard.style.display = "none";
+    timerDisplay.style.display = "none";
+    const secondsSurvived = Math.floor((Date.now() - gameStartTime) / 1000);
+    gameOver.textContent = `게임 종료\n거북스딱스 수명: ${secondsSurvived}초\n화면을 클릭하면 다시 시작합니다`;
+    gameOver.style.display = "block";
+  }
+
+  function increaseSpeed() {
+    if (gameEnded) return;
+    speed += 20;
+    trashFallSpeed += 0.2;
+  }
+
+  let lastTime = null;
+  function move(time) {
+    if (gameEnded) return;
+    if (!lastTime) lastTime = time;
+    let delta = (time - lastTime) / 1000;
+    lastTime = time;
+
+    let dx = 0, dy = 0;
+    if (keys.ArrowUp) dy -= 1;
+    if (keys.ArrowDown) dy += 1;
+    if (keys.ArrowLeft) dx -= 1;
+    if (keys.ArrowRight) dx += 1;
+
+    if (dx !== 0 && dy !== 0) {
+      dx *= Math.SQRT1_2;
+      dy *= Math.SQRT1_2;
+    }
+
+    x += dx * speed * delta;
+    y += dy * speed * delta;
+    x = Math.min(window.innerWidth - turtle.clientWidth, Math.max(0, x));
+    y = Math.min(window.innerHeight - turtle.clientHeight, Math.max(0, y));
+    turtle.style.left = x + "px";
+    turtle.style.top = y + "px";
+
+    let secondsPassed = Math.floor((Date.now() - gameStartTime) / 1000);
+    timerDisplay.textContent = `거북스딱스 수명: ${secondsPassed}초`;
+
+    requestAnimationFrame(move);
+  }
+
+  function restartGame() {
+    x = 200;
+    y = 400;
+    speed = baseSpeed;
+    trashFallSpeed = 2;
+    hearts = 3;
+    gameEnded = false;
+    gameStartTime = Date.now();
+    turtle.style.left = x + "px";
+    turtle.style.top = y + "px";
+    updateHearts();
+    scoreboard.style.display = "block";
+    timerDisplay.style.display = "block";
+    gameOver.style.display = "none";
+    resetTurtleColor();
+    document.querySelectorAll(".trash").forEach(el => el.remove());
+    trashInterval = setInterval(createTrash, 1000);
+    speedIncreaseInterval = setInterval(increaseSpeed, 7000);
+    requestAnimationFrame(move);
+  }
+
+  document.addEventListener("click", () => {
+    if (gameEnded) restartGame();
+  });
+
+  updateHearts();
+  let trashInterval = setInterval(createTrash, 1000);
+  let speedIncreaseInterval = setInterval(increaseSpeed, 7000);
+  requestAnimationFrame(move);
+</script>
+</body>
+</html>

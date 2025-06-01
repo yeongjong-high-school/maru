@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>거북이 리본 줍기 게임 (최종)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="score-board">점수: <span id="score">0</span></div>
+        <div id="game-area">
+            <div class="turtle-container" id="myTurtle">
+                <div class="shell">
+                    <div class="shell-pattern pattern1"></div>
+                    <div class="shell-pattern pattern2"></div>
+                    <div class="shell-pattern pattern3"></div>
+                    <div class="shell-pattern pattern4"></div>
+                    <div class="shell-pattern pattern5"></div>
+                    <!-- 등껍질 위 리본 (초기 숨김) -->
+                    <div class="ribbon-on-shell hidden">
+                        <div class="knot"></div>
+                        <div class="loop loop1"></div>
+                        <div class="loop loop2"></div>
+                    </div>
+                </div>
+                <div class="head">
+                    <div class="eye left-eye"><div class="pupil"></div></div>
+                    <div class="eye right-eye"><div class="pupil"></div></div>
+                    <div class="mouth"></div>
+                </div>
+                <div class="leg front-left"></div>
+                <div class="leg front-right"></div>
+                <div class="leg back-left"></div>
+                <div class="leg back-right"></div>
+                <div class="tail"></div>
+            </div>
+            <!-- 리본 및 장애물은 JavaScript로 동적으로 추가됩니다 -->
+        </div>
+        <p class="controls">방향키 또는 WASD로 거북이를 움직여 리본을 모으세요!</p>
+
+        <!-- 게임 오버 화면 -->
+        <div id="game-over-screen" class="hidden">
+            <h2>게임 오버!</h2>
+            <p>최종 점수: <span id="final-score">0</span></p>
+            <button id="restart-button">다시 시작</button>
+        </div>
+
+        <!-- 게임 성공 화면 -->
+        <div id="game-success-screen" class="hidden">
+            <h2>성공!</h2>
+            <p>축하합니다! 목표 점수 <span id="target-score-success">25</span>점을 달성했어요!</p>
+            <p>최종 점수: <span id="final-score-success">0</span></p>
+            <button id="restart-button-success">다시 시작</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
